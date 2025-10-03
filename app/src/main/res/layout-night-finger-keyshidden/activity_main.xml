@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="8dp">
+
+    <!--PUNTAJE-->
+    <TextView
+        android:id="@+id/scoreText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Puntaje: 0"
+        android:textSize="18sp"
+        android:layout_marginBottom="8dp"
+        />
+
+    <!--AREA DE JUEGO-->
+    <FrameLayout
+        android:id="@+id/gameContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#FFFDE7"
+        />
+
+    <!--INPUT-->
+    <EditText
+        android:id="@+id/inputWord"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Escribe aquí"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:maxLines="1"
+        />
+    
+</LinearLayout>
