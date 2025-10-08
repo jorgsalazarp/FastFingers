@@ -1,39 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="8dp">
+    android:layout_height="match_parent">
 
-    <!--PUNTAJE-->
-    <TextView
-        android:id="@+id/scoreText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Puntaje: 0"
-        android:textSize="18sp"
-        android:layout_marginBottom="8dp"
-        />
-
-    <!--AREA DE JUEGO-->
-    <FrameLayout
-        android:id="@+id/gameContainer"
+    <cl.duoc.fastfingers.GameView
+        android:id="@+id/gameView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="#FFFDE7"
-        />
+        android:layout_height="match_parent" />
 
-    <!--INPUT-->
-    <EditText
-        android:id="@+id/inputWord"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:layout_gravity="bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Escribe aquí"
-        android:imeOptions="actionDone"
-        android:inputType="text"
-        android:maxLines="1"
-        />
-    
-</LinearLayout>
+        android:background="#AA000000">
+
+        <TextView
+            android:id="@+id/scoreView"
+            android:text="Puntaje: 0"
+            android:textColor="#FFFFFF"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"/>
+
+        <EditText
+            android:id="@+id/input"
+            android:hint="Escribe aquí"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:maxLines="1"/>
+    </LinearLayout>
+</FrameLayout>
