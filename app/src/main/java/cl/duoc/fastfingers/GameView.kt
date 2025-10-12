@@ -10,6 +10,7 @@ import android.view.SurfaceView
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.max
+import cl.duoc.fastfingers.model.Word
 
 class GameView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -86,7 +87,7 @@ class GameView @JvmOverloads constructor(
             lastTime = now
             update(dtMs)
             draw()
-            try { Thread.sleep(16) } catch (e: InterrumpedException) { /*ignore*/ }
+            try { Thread.sleep(16) } catch (e: InterruptedException) { /*ignore*/ }
         }
     }
 

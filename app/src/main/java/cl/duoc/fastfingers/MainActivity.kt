@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        gameView = findViewBy(R.id.gameView)
+        gameView = findViewById(R.id.gameView)
         input = findViewById(R.id.input)
         scoreView = findViewById(R.id.scoreView)
 
@@ -42,18 +42,18 @@ class MainActivity : AppCompatActivity() {
                 if (active == null) return
 
                 // escribir = prefijo => ok (progreso)
-                if (active.text.startWith(typed)) {
+                if (active.text.startsWith(typed)) {
                     // marcar progreso en la palabra
                     gameView.setUserProgressForActiveWord(typed)
                     // por si completa la palabra
                     if (typed == active.text) {
                         gameView.completeActiveWord()
-                        input.text.clear()
+                        input.text?.clear()
                     }
                 } else {
                     // por si el usuario se equivoca (penalizacion y reinicar palabra)
                     gameView.penalizeActiveWord()
-                    input.text.clear()
+                    input.text?.clear()
                 }
             }
         })
