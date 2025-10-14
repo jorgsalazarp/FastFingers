@@ -16,14 +16,6 @@
         android:layout_height="wrap_content"
         android:background="#AA000000">
 
-        <TextView
-            android:id="@+id/scoreView"
-            android:text="Puntaje: 0"
-            android:textColor="#FFFFFF"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"/>
-
         <EditText
             android:id="@+id/input"
             android:hint="Escribe aquí"
@@ -33,4 +25,12 @@
             android:inputType="text"
             android:maxLines="1"/>
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/scoreView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="Puntaje: 0"
+        android:textColor="#FFFFFF" />
 </FrameLayout>
