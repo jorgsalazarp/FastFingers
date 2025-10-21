@@ -6,19 +6,24 @@ import android.text.TextWatcher
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.EditText
 import android.widget.TextView
+import android.util.Log
 
 class MainActivity : AppCompatActivity() {
     private lateinit var gameView: GameView
     private lateinit var input: EditText
     private lateinit var scoreView: TextView
+    private val TAG = "FF/MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate: start")
         setContentView(R.layout.activity_main)
 
         gameView = findViewById(R.id.gameView)
         input = findViewById(R.id.input)
         scoreView = findViewById(R.id.scoreView)
+
+        Log.d(TAG, "Views inicializadas: gameView=${R.id.gameView} input=${R.id.input}")
 
         //Actualizar puntaje y game over
         gameView.listener = object : GameView.GameEventListener {

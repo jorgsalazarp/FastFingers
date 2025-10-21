@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import java.util.*
@@ -24,7 +25,8 @@ class GameView @JvmOverloads constructor(
     var listener: GameEventListener? = null
 
     private val words = Collections.synchronizedList(ArrayList<Word>())
-    @Volatile private var running = false
+    @Volatile
+    private var running = false
     private var thread: Thread? = null
     private val rnd = Random()
 
@@ -50,18 +52,21 @@ class GameView @JvmOverloads constructor(
     private val baseFallSpeed = 100f
     private val penaltyPixels = 20f
     private val maxAllowedMillisForBonus = 4000L
+    private val TAG = "FF/GameView"
 
     init {
         holder.addCallback(this)
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
+        Log.d(TAG, "surfaceCreated - starting thread")
         running = true
         thread = Thread { gameLoop() }.also { it.start() }
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
     override fun surfaceDestroyed(holder: SurfaceHolder) {
+        Log.d(TAG, "surfaceDestroyed - starting thread")
         running = false
         try {
             thread?.join()
@@ -79,6 +84,7 @@ class GameView @JvmOverloads constructor(
     fun pause() { surfaceDestroyed(holder) }
 
     private fun gameLoop() {
+        Log.d(TAG, "gameLoop started")
         var lastTime = System.currentTimeMillis()
         lastSpawnAt = lastTime
         while (running) {
@@ -89,6 +95,7 @@ class GameView @JvmOverloads constructor(
             draw()
             try { Thread.sleep(16) } catch (e: InterruptedException) { /*ignore*/ }
         }
+        Log.d(TAG, "gameLoop ended")
     }
 
     private fun update (dtMs: Long) {
@@ -114,6 +121,8 @@ class GameView @JvmOverloads constructor(
     }
 
     private fun spawnWord() {
+        Log.d(TAG, "spawnWord: width=$width height=$height score=$score")
+
         val sample = sampleWord()
         val availableWidth = max(1, width - 200)
         val x = (rnd.nextInt(availableWidth) + 20).toFloat()
@@ -132,7 +141,16 @@ class GameView @JvmOverloads constructor(
     }
 
     private fun draw() {
-        val canvas: Canvas = holder.lockCanvas() ?: return
+        if (!holder.surface.isValid) {
+            Log.d(TAG, "draw: surface not valid")
+            return
+        }
+
+        val canvas: Canvas = holder.lockCanvas()
+        if (canvas == null) {
+            Log.w(TAG, "draw: lockCanvas returned null")
+            return
+        }
         try {
             canvas.drawColor(Color.BLACK)
             synchronized(words) {
