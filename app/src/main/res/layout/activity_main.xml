@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- GameView ocupa todo -->
     <cl.duoc.fastfingers.GameView
         android:id="@+id/gameView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!-- Barra inferior con puntaje y campo de ingreso -->
     <LinearLayout
+        android:id="@+id/bottomBar"
         android:orientation="horizontal"
         android:padding="8dp"
         android:layout_gravity="bottom"
@@ -18,13 +22,61 @@
 
         <EditText
             android:id="@+id/input"
-            android:hint="Escribe aquí"
+            android:hint="@string/hint_input"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:inputType="text"
             android:maxLines="1"/>
     </LinearLayout>
+
+    <!-- Overlay de Game Over (invisible hasta el final del juego) -->
+    <FrameLayout
+        android:id="@+id/gameOverOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#CC000000"
+        android:visibility="gone"
+        android:padding="24dp">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tvGameOver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/game_over"
+                android:textSize="24sp"
+                android:textColor="#FFFFFF"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:id="@+id/tvFinalScore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Puntaje final: 0"
+                android:textSize="18sp"
+                android:textColor="#FFFFFF"
+                android:layout_marginBottom="24dp" />
+
+            <Button
+                android:id="@+id/btnRestart"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:text="@string/restart_game"
+                android:layout_marginBottom="12dp" />
+
+            <Button
+                android:id="@+id/btnExitGame"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:text="@string/exit_app" />
+        </LinearLayout>
+    </FrameLayout>
 
     <TextView
         android:id="@+id/scoreView"
@@ -33,4 +85,5 @@
         android:layout_marginEnd="8dp"
         android:text="Puntaje: 0"
         android:textColor="#FFFFFF" />
+
 </FrameLayout>

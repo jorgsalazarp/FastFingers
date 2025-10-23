@@ -26,6 +26,53 @@
             android:maxLines="1"/>
     </LinearLayout>
 
+    <FrameLayout
+        android:id="@+id/gameOverOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#CC000000"
+        android:visibility="gone"
+        android:padding="24dp">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tvGameOver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FIN DEL JUEGO"
+                android:textSize="24sp"
+                android:textColor="#FFFFFF"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:id="@+id/tvFinalScore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Puntaje final: 0"
+                android:textSize="18sp"
+                android:textColor="#FFFFFF"
+                android:layout_marginBottom="24dp" />
+
+            <Button
+                android:id="@+id/btnRestart"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:text="REINICIAR"
+                android:layout_marginBottom="12dp" />
+
+            <Button
+                android:id="@+id/btnExitGame"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:text="SALIR" />
+        </LinearLayout>
+    </FrameLayout>
+
     <TextView
         android:id="@+id/scoreView"
         android:layout_width="wrap_content"

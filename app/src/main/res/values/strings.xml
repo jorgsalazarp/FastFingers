@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Fast Fingers</string>
+    <string name="start_game">Jugar</string>
+    <string name="exit_app">Salir</string>
+    <string name="restart_game">Reiniciar</string>
+    <string name="game_over">Fin del juego</string>
+    <string name="hint_input">Escribe aquí</string>
 </resources>
