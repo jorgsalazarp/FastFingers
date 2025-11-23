@@ -1,12 +1,13 @@
 package cl.duoc.fastfingers.model
 
-data class Word (
+data class Word(
     val text: String,
     var x: Float,
     var y: Float,
     var speed: Float
 ) {
     var spawnedAt: Long = System.currentTimeMillis()
-    // Progreso (lo que ha escrito hasta ahora)
+
+    //Marca el progreso escrit en la pabalabra
     var progress: String = ""
 }

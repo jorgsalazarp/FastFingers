@@ -1,6 +1,5 @@
 package cl.duoc.fastfingers
 
-import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -10,6 +9,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.util.Log
+import cl.duoc.fastfingers.data.WordDatabase
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : AppCompatActivity() {
     private val TAG = "FF/MainActivity"
@@ -25,6 +26,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val wordDao = WordDatabase.getDatabase(applicationContext).wordDao()
+
         Log.d(TAG, "onCreate: start")
         setContentView(R.layout.activity_main)
 
@@ -43,11 +47,11 @@ class MainActivity : AppCompatActivity() {
         if (btnRestart == null) Log.w(TAG, "btnRestart NO encontrado en layout (null)")
         if (btnExitGame == null) Log.w(TAG, "btnExitGame NO encontrado en layout (null)")
 
-        gameView = findViewById(R.id.gameView)
-        input = findViewById(R.id.input)
-        scoreView = findViewById(R.id.scoreView)
-
-        Log.d(TAG, "Views inicializadas: gameView=${R.id.gameView} input=${R.id.input}")
+        gameView.wordProvider = {
+            runBlocking {
+                wordDao.getRandomWord() ?: "error"
+            }
+        }
 
         //Actualizar puntaje y game over
         gameView.listener = object : GameView.GameEventListener {
@@ -87,10 +91,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
-
+        //boton de reinciar
         btnRestart?.setOnClickListener {
             recreate()
         }
+        //boton para salir del juego
         btnExitGame?.setOnClickListener {
             finishAffinity()
         }

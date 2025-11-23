@@ -23,6 +23,7 @@ class GameView @JvmOverloads constructor(
     }
 
     var listener: GameEventListener? = null
+    var wordProvider: (() -> String)? = null //Provee palabras desde la base de datos
 
     private val words = Collections.synchronizedList(ArrayList<Word>())
     @Volatile
@@ -30,10 +31,12 @@ class GameView @JvmOverloads constructor(
     private var thread: Thread? = null
     private val rnd = Random()
 
+    //color de las palabras
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
         textSize = 64f
     }
+    //color del progreso de las palabras
     private val paintProgress = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.GREEN
         textSize = 64f
@@ -74,7 +77,7 @@ class GameView @JvmOverloads constructor(
             // ignore
         }
     }
-
+    //pausa del juego
     fun resume() {
         // Lanza el loop si el surface ya está creado, si no, se encarga surfaceCreated
         if (!running && holder.surface.isValid) {
@@ -83,6 +86,7 @@ class GameView @JvmOverloads constructor(
     }
     fun pause() { surfaceDestroyed(holder) }
 
+    //esto permite que el juego siga funcionado como un Loop, hasta que pausemos el juego o nos salgamos
     private fun gameLoop() {
         Log.d(TAG, "gameLoop started")
         var lastTime = System.currentTimeMillis()
@@ -97,7 +101,7 @@ class GameView @JvmOverloads constructor(
         }
         Log.d(TAG, "gameLoop ended")
     }
-
+    //esto permite que se vaya actualizando
     private fun update (dtMs: Long) {
         val dt = dtMs / 1000f
         val h = height
@@ -123,21 +127,20 @@ class GameView @JvmOverloads constructor(
     private fun spawnWord() {
         Log.d(TAG, "spawnWord: width=$width height=$height score=$score")
 
-        val sample = sampleWord()
+        val sample = wordProvider?.invoke() ?: "error"
+        if (sample == "error"){
+            Log.e(TAG, "WordProvider es nulo o devolvió un error")
+            return
+        }
+
         val availableWidth = max(1, width - 200)
         val x = (rnd.nextInt(availableWidth) + 20).toFloat()
         val y = -20f
         val speed = baseFallSpeed + rnd.nextInt(80)
+
         val w = Word(sample, x, y, speed)
         w.spawnedAt = System.currentTimeMillis()
         words.add(w)
-    }
-
-    private fun sampleWord(): String {
-        val list = listOf(
-            "hola", "mundo", "android", "kotlin", "zombie", "codigo", "teclado", "juego", "accion", "rapido", "puntaje", "vida"
-        )
-        return list [rnd.nextInt(list.size)]
     }
 
     private fun draw() {
