@@ -59,6 +59,9 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:1.7.1")
 
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
+    implementation("com.google.android.material:material:1.13.0")
+
     //Room API
     implementation("androidx.room:room-runtime:2.8.4")
     implementation("androidx.room:room-ktx:2.8.4")

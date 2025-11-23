@@ -25,7 +25,21 @@
             android:id="@+id/btnStart"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="EMPEZAR"
+            android:text="JUGAR"
+            android:layout_marginBottom="12dp" />
+        
+        <Button
+            android:id="@+id/btnInstructions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="INSTRUCCIONES"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/btnRanking"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="RANKINGS"
             android:layout_marginBottom="12dp" />
 
         <Button
@@ -33,5 +47,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="SALIR" />
+        
     </LinearLayout>
 </FrameLayout>

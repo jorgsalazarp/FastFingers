@@ -9,7 +9,13 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.util.Log
+import android.widget.Toast
+import android.content.Intent
+import cl.duoc.fastfingers.data.ScoreRepository
 import cl.duoc.fastfingers.data.WordDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : AppCompatActivity() {
@@ -21,8 +27,13 @@ class MainActivity : AppCompatActivity() {
 
     private var gameOverOverlay: View? = null
     private var tvFinalScore: TextView? = null
+    private var etUsername: EditText? = null
+    private var btnSaveScore: Button? = null
     private var btnRestart: Button? = null
+    private var btnGoToRanking: Button? = null
     private var btnExitGame: Button? = null
+
+    private val scoreRepository = ScoreRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +50,9 @@ class MainActivity : AppCompatActivity() {
 
         gameOverOverlay = findViewById(R.id.gameOverOverlay)
         tvFinalScore = findViewById(R.id.tvFinalScore)
+        etUsername = findViewById(R.id.etUsername)
+        btnSaveScore = findViewById(R.id.btnSaveScore)
+        btnGoToRanking = findViewById(R.id.btnGoToRanking)
         btnRestart = findViewById(R.id.btnRestart)
         btnExitGame = findViewById(R.id.btnExitGame)
 
@@ -63,6 +77,8 @@ class MainActivity : AppCompatActivity() {
                     tvFinalScore?.text = "Puntaje final: ${gameView.score}"
                     input.isEnabled = false
                     gameOverOverlay?.visibility = View.VISIBLE
+                    etUsername?.text?.clear()
+                    btnSaveScore?.isEnabled = true
                 }
             }
         }
@@ -91,14 +107,44 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+
+        //Boton para guardar puntaje
+        btnSaveScore?.setOnClickListener {
+            val name = etUsername?.text.toString().trim()
+            val score = gameView.score
+
+            if (name.isEmpty()) {
+                Toast.makeText(this, "Ingresa un nombre", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            //Deshabilita para evitar que se envie 2 veces
+            btnSaveScore?.isEnabled = false
+            Toast.makeText(this, "Enviando puntaje...", Toast.LENGTH_SHORT).show()
+
+            //Couroutines con red
+            CoroutineScope(Dispatchers.IO).launch {
+                val success = scoreRepository.submitScore(name, score)
+                runOnUiThread {
+                    if (success) {
+                        Toast.makeText(this@MainActivity, "¡Puntaje guardado!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@MainActivity, "Error al guardar... Es culpa del internet, no mía...", Toast.LENGTH_SHORT).show()
+                        btnSaveScore?.isEnabled = true //Permite intenter de nuevo en caso de error
+                    }
+                }
+            }
+        }
+
+        btnGoToRanking?.setOnClickListener {
+            startActivity(Intent(this, RankingActivity::class.java))
+            finish()
+        }
+
         //boton de reinciar
-        btnRestart?.setOnClickListener {
-            recreate()
-        }
+        btnRestart?.setOnClickListener { recreate() }
         //boton para salir del juego
-        btnExitGame?.setOnClickListener {
-            finishAffinity()
-        }
+        btnExitGame?.setOnClickListener { finish() }
 
     }
 

@@ -8,12 +8,12 @@ import retrofit2.http.POST
 
 interface ApiService {
     companion object{
-        const val BASE_URL = "https://" //CAMBIAR VALOR DEL URL
+        const val BASE_URL = "https://6922689509df4a4923225cf1.mockapi.io/" //CAMBIAR VALOR DEL URL
     }
 
     @POST("scores")
     suspend fun submitScore(@Body request: ScoreRequest): Response<Score>
 
-    @GET("scores")
+    @GET("scores?sortBy=score&order=desc")
     suspend fun getTopScores(): Response<List<Score>>
 }
