@@ -5,6 +5,17 @@
     android:layout_height="match_parent"
     android:background="#FF121212">
 
+    <ImageView
+        android:id="@+id/btnSettingsIcon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/spr_opciones"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        android:padding="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Configuración" />
+
     <LinearLayout
         android:orientation="vertical"
         android:gravity="center"
@@ -12,14 +23,14 @@
         android:layout_height="match_parent"
         android:padding="32dp">
 
-        <TextView
-            android:id="@+id/tvTitle"
+        <ImageView
+            android:id="@+id/ivGameLogo"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textSize="28sp"
-            android:textColor="#FFFFFF"
-            android:layout_marginBottom="24dp" />
+            android:layout_height="120dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/game_title"
+            android:layout_marginBottom="48dp"
+            android:contentDescription="Logo Fast Fingers" />
 
         <Button
             android:id="@+id/btnStart"

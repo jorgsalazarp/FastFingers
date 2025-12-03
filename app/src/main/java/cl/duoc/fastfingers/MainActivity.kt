@@ -1,16 +1,19 @@
 package cl.duoc.fastfingers
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.util.Log
+import android.widget.ImageView
 import android.widget.Toast
-import android.content.Intent
 import cl.duoc.fastfingers.data.ScoreRepository
 import cl.duoc.fastfingers.data.WordDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -76,6 +79,9 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread {
                     tvFinalScore?.text = "Puntaje final: ${gameView.score}"
                     input.isEnabled = false
+
+                    hideKeyboard()
+
                     gameOverOverlay?.visibility = View.VISIBLE
                     etUsername?.text?.clear()
                     btnSaveScore?.isEnabled = true
@@ -146,11 +152,19 @@ class MainActivity : AppCompatActivity() {
         //boton para salir del juego
         btnExitGame?.setOnClickListener { finish() }
 
+        val btnGameSettings = findViewById<ImageView>(R.id.btnGameSettings)
+
+        btnGameSettings.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            intent.putExtra("FROM_GAME", true)
+            startActivity(intent)
+        }
     }
 
     override fun onResume() {
         super.onResume()
         gameView.resume()
+        showKeyboard()
     }
 
     override fun onPause() {
@@ -158,4 +172,19 @@ class MainActivity : AppCompatActivity() {
         gameView.pause()
     }
 
+    private fun showKeyboard() {
+        input.requestFocus()
+        input.postDelayed({
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
+        }, 200)
+    }
+
+    private fun hideKeyboard() {
+        val view = this.currentFocus
+        if (view != null) {
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+    }
 }

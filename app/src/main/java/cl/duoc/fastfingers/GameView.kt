@@ -1,6 +1,8 @@
 package cl.duoc.fastfingers
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -23,7 +25,7 @@ class GameView @JvmOverloads constructor(
     }
 
     var listener: GameEventListener? = null
-    var wordProvider: (() -> String)? = null //Provee palabras desde la base de datos
+    var wordProvider: (() -> String)? = null
 
     private val words = Collections.synchronizedList(ArrayList<Word>())
     @Volatile
@@ -31,12 +33,31 @@ class GameView @JvmOverloads constructor(
     private var thread: Thread? = null
     private val rnd = Random()
 
-    //color de las palabras
+    private var preparedBackground: Bitmap? = null
+
+    // LISTA DE FONDOS
+    private val backgroundResources = listOf(
+        0, // 0 = Default (Negro)
+        R.drawable.bg_wood,
+        R.drawable.bg_bricks,
+        R.drawable.bg_space
+    )
+
+    // Cuenta regresiva
+    private var isCountingDown = false
+    private val countdownBitmaps = mutableListOf<Bitmap>()
+    private var currentCountdownImage: Bitmap? = null
+
+    // Velo oscuro (60% negro) para que el texto resalte sobre el fondo
+    private val scrimPaint = Paint().apply {
+        color = Color.argb(150, 0, 0, 0)
+    }
+
+    // Colores del texto
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
         textSize = 64f
     }
-    //color del progreso de las palabras
     private val paintProgress = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.GREEN
         textSize = 64f
@@ -49,10 +70,9 @@ class GameView @JvmOverloads constructor(
     var score = 0
         private set
 
-    // Configurables (cambiar atributos del juego)
+    private var baseFallSpeed = 100f
     private val spawnIntervalMs = 1400L
     private var lastSpawnAt = 0L
-    private val baseFallSpeed = 100f
     private val penaltyPixels = 20f
     private val maxAllowedMillisForBonus = 4000L
     private val TAG = "FF/GameView"
@@ -62,61 +82,144 @@ class GameView @JvmOverloads constructor(
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
-        Log.d(TAG, "surfaceCreated - starting thread")
+        Log.d(TAG, "surfaceCreated")
         running = true
-        thread = Thread { gameLoop() }.also { it.start() }
+        thread = Thread {
+            loadCountdownResources()
+            runCountdownSequence()
+            gameLoop() }.also { it.start() }
     }
 
-    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        generateFinalBackground(width, height)
+    }
+
     override fun surfaceDestroyed(holder: SurfaceHolder) {
-        Log.d(TAG, "surfaceDestroyed - starting thread")
         running = false
         try {
             thread?.join()
-        } catch (e: InterruptedException) {
-            // ignore
-        }
+        } catch (e: InterruptedException) { }
     }
-    //pausa del juego
+
     fun resume() {
-        // Lanza el loop si el surface ya está creado, si no, se encarga surfaceCreated
         if (!running && holder.surface.isValid) {
             surfaceCreated(holder)
         }
     }
     fun pause() { surfaceDestroyed(holder) }
 
-    //esto permite que el juego siga funcionado como un Loop, hasta que pausemos el juego o nos salgamos
+    // Recursos cuenta regresiva
+    private fun loadCountdownResources() {
+        countdownBitmaps.clear()
+        try {
+            countdownBitmaps.add(BitmapFactory.decodeResource(resources, R.drawable.count3))
+            countdownBitmaps.add(BitmapFactory.decodeResource(resources, R.drawable.count2))
+            countdownBitmaps.add(BitmapFactory.decodeResource(resources, R.drawable.count1))
+            countdownBitmaps.add(BitmapFactory.decodeResource(resources, R.drawable.count_go))
+        } catch (e: Exception) {
+            Log.e(TAG, "Error cargando imagenes de cuenta regresiva", e)
+        }
+    }
+
+    // Logica cuenta regresiva
+    private fun runCountdownSequence() {
+        if (countdownBitmaps.isEmpty()) return
+
+        isCountingDown = true
+        Log.d(TAG, "Iniciando cuenta regresiva...")
+
+        while (preparedBackground == null && running) {
+            try {
+                Thread.sleep(50)
+            } catch (e: InterruptedException) {}
+        }
+
+        for (bitmap in countdownBitmaps) {
+            if (!running) break //Corta la cuenta si el usuario se sale
+            currentCountdownImage = bitmap
+            draw()
+            try {
+                Thread.sleep(1000) // 1 Segundo
+            } catch (e: InterruptedException) {
+                break
+            }
+        }
+
+        isCountingDown = false
+        currentCountdownImage = null
+        lastSpawnAt = System.currentTimeMillis()
+        Log.d(TAG, "Cuenta regresiva terminada.")
+    }
+
+    private fun generateFinalBackground(w: Int, h: Int) {
+        if (w <= 0 || h <= 0) return
+
+        val prefs = context.getSharedPreferences("FastFingersPrefs", Context.MODE_PRIVATE)
+        val bgIndex = prefs.getInt("BG_INDEX", 0)
+
+        val finalBmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(finalBmp)
+
+        if (bgIndex > 0 && bgIndex < backgroundResources.size) {
+            val resId = backgroundResources[bgIndex]
+            try {
+                val originalBitmap = BitmapFactory.decodeResource(resources, resId)
+
+                // Esto asegura que la imagen llene la pantalla sin deformarse,
+                // recortando lo que sobre de los lados o de arriba/abajo.
+                val scale = max(w.toFloat() / originalBitmap.width, h.toFloat() / originalBitmap.height)
+                val scaledWidth = originalBitmap.width * scale
+                val scaledHeight = originalBitmap.height * scale
+                val x = (w - scaledWidth) / 2f
+                val y = (h - scaledHeight) / 2f
+
+                val destRect = android.graphics.RectF(x, y, x + scaledWidth, y + scaledHeight)
+
+                canvas.drawBitmap(originalBitmap, null, destRect, null)
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Error generando fondo", e)
+                canvas.drawColor(Color.BLACK)
+            }
+        } else {
+            // Si es 0, fondo negro
+            canvas.drawColor(Color.BLACK)
+        }
+
+        canvas.drawRect(0f, 0f, w.toFloat(), h.toFloat(), scrimPaint)
+
+        // Guardar lienzo elegido
+        preparedBackground = finalBmp
+    }
+
     private fun gameLoop() {
-        Log.d(TAG, "gameLoop started")
         var lastTime = System.currentTimeMillis()
         lastSpawnAt = lastTime
         while (running) {
+            if (isCountingDown) continue
+
             val now = System.currentTimeMillis()
             val dtMs = now - lastTime
             lastTime = now
             update(dtMs)
             draw()
-            try { Thread.sleep(16) } catch (e: InterruptedException) { /*ignore*/ }
+            try { Thread.sleep(16) } catch (e: InterruptedException) { }
         }
-        Log.d(TAG, "gameLoop ended")
     }
-    //esto permite que se vaya actualizando
+
     private fun update (dtMs: Long) {
+        if (isCountingDown) return
+
         val dt = dtMs / 1000f
         val h = height
-        // spawn
         if (System.currentTimeMillis() - lastSpawnAt >= spawnIntervalMs) {
             spawnWord()
             lastSpawnAt = System.currentTimeMillis()
         }
-
-        //mover palabras
         val it = words.iterator()
         while (it.hasNext()) {
             val w = it.next()
             w.y += w.speed * dt
-            // game over al tocar al suelo (puede cambiarse por vidas)
             if (w.y >= h - 30) {
                 running = false
                 listener?.onGameOver()
@@ -125,13 +228,8 @@ class GameView @JvmOverloads constructor(
     }
 
     private fun spawnWord() {
-        Log.d(TAG, "spawnWord: width=$width height=$height score=$score")
-
         val sample = wordProvider?.invoke() ?: "error"
-        if (sample == "error"){
-            Log.e(TAG, "WordProvider es nulo o devolvió un error")
-            return
-        }
+        if (sample == "error") return
 
         val availableWidth = max(1, width - 200)
         val x = (rnd.nextInt(availableWidth) + 20).toFloat()
@@ -144,31 +242,35 @@ class GameView @JvmOverloads constructor(
     }
 
     private fun draw() {
-        if (!holder.surface.isValid) {
-            Log.d(TAG, "draw: surface not valid")
-            return
-        }
+        if (!holder.surface.isValid) return
+        val canvas: Canvas = holder.lockCanvas() ?: return
 
-        val canvas: Canvas = holder.lockCanvas()
-        if (canvas == null) {
-            Log.w(TAG, "draw: lockCanvas returned null")
-            return
-        }
         try {
-            canvas.drawColor(Color.BLACK)
-            synchronized(words) {
-                for (w in words) {
-                    //sombra
-                    canvas.drawText(w.text, w.x + 4, w.y + 4, paintShadow)
-                    // palabra (con resalte segun el progreso de escritura)
-                    if (w.progress.isNotEmpty()) {
-                        val completed = w.progress
-                        val remaining = w.text.substring(completed.length)
-                        canvas.drawText(completed, w.x, w.y, paintProgress)
-                        val offset = paintProgress.measureText(completed)
-                        canvas.drawText(remaining, w.x + offset, w.y, paint)
-                    } else {
-                        canvas.drawText(w.text, w.x, w.y, paint)
+            if (preparedBackground != null) {
+                canvas.drawBitmap(preparedBackground!!, 0f, 0f, null)
+            } else {
+                canvas.drawColor(Color.BLACK)
+            }
+
+            if (isCountingDown) {
+                currentCountdownImage?.let { img ->
+                    val x = (width - img.width) / 2f
+                    val y = (height - img.height) / 2f
+                    canvas.drawBitmap(img, x, y, null)
+                }
+            } else {
+                synchronized(words) {
+                    for (w in words) {
+                        canvas.drawText(w.text, w.x + 4, w.y + 4, paintShadow)
+                        if (w.progress.isNotEmpty()) {
+                            val completed = w.progress
+                            val remaining = w.text.substring(completed.length)
+                            canvas.drawText(completed, w.x, w.y, paintProgress)
+                            val offset = paintProgress.measureText(completed)
+                            canvas.drawText(remaining, w.x + offset, w.y, paint)
+                        } else {
+                            canvas.drawText(w.text, w.x, w.y, paint)
+                        }
                     }
                 }
             }
@@ -177,9 +279,7 @@ class GameView @JvmOverloads constructor(
         }
     }
 
-    // --- Metodos llamados desde Activity / input ---
-
-    // Focus en la palabra activa mas antigua (la que esté mas abajo)
+    // Métodos de interacción
     fun getActiveWord(): Word? {
         synchronized(words) {
             if (words.isEmpty()) return null
@@ -196,21 +296,15 @@ class GameView @JvmOverloads constructor(
         val w = getActiveWord() ?: return
         val now = System.currentTimeMillis()
         val timeTaken = now - w.spawnedAt
-        // puntaje base * largo palabra
         val base = w.text.length * 10
-        // puntaje bono por rapidez
         val bonus = max(0, ((maxAllowedMillisForBonus - timeTaken) / 100).toInt())
         score += base + bonus
         listener?.onScoreUpdated(score)
-        // eliminar palabra cuando es escrita
         synchronized(words) { words.remove(w) }
     }
 
-    // Penalizacion por equivocarse (aumentar cercania a gameover + reiniciar)
     fun penalizeActiveWord() {
         val w = getActiveWord() ?: return
         w.y += penaltyPixels
-        //Se puede añadir vibracion por equivocación
     }
-
 }
